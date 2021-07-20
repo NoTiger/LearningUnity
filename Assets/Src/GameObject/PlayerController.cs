@@ -3,13 +3,18 @@ using Learning.Interface;
 
 namespace Leaning.GameObject
 {
-    public class PlayerController : MonoBehaviour, IBasicMovementDetector
+    public class PlayerController : MonoBehaviour
     {
-        public float horizontalSpeed = 7f;
-        public float verticalSpeed = 7f;
+        [SerializeField] private float _horizontalSpeed = 7f;
+        [SerializeField] private float _verticalSpeed = 7f;
 
         private Rigidbody2D _rigidbody;
         private Vector2 _playerVelocity = new Vector2(0, 0);
+        private float _horizontalMovementDir = 0;
+        private float _verticalVelocity = 0;
+
+        private Animator _animator;
+        private SpriteRenderer _sprite;
 
         private bool _hasDoubledJump = false;
         private bool _touchingSurface = false;
@@ -18,11 +23,14 @@ namespace Leaning.GameObject
         private void Awake()
         {
             _rigidbody = GetComponent<Rigidbody2D>();
+            _animator = GetComponent<Animator>();
+            _sprite = GetComponent<SpriteRenderer>();
         }
 
         private void OnCollisionEnter2D()
         {
             _touchingSurface = true;
+            _hasDoubledJump = false;
         }
 
         private void OnCollisionExit2D()
@@ -39,44 +47,71 @@ namespace Leaning.GameObject
         private void Update()
         {
             _playerVelocity = GetMovementVelocityFromInput();
+            handleAnimation();
         }
 
         private Vector2 GetMovementVelocityFromInput()
         {
-            float dirX = GetHorizontalMovement();
-            float velocityY = GetVerticalMovement();
+            setVectorByHorizontalInput();
+            setVectorByVerticalInput();
 
-            return new Vector2(dirX * horizontalSpeed, velocityY);
+            return new Vector2(_horizontalMovementDir * _horizontalSpeed, _verticalVelocity);
         }
 
-        public float GetHorizontalMovement()
+        public void setVectorByHorizontalInput()
         {
-            float horizontalInput = Input.GetAxis("Horizontal");
-
             if (_touchingSurface)
             {
-                return horizontalInput;
+                _horizontalMovementDir = Input.GetAxis("Horizontal");
             }
-
-            return _rigidbody.velocity.x / horizontalSpeed;
+            else
+            {
+                _horizontalMovementDir = _rigidbody.velocity.x / _horizontalSpeed;
+            }
         }
 
-        public float GetVerticalMovement()
+        public void setVectorByVerticalInput()
         {
-            bool allowJump = _touchingSurface || !_hasDoubledJump;
 
-            if (Input.GetButtonDown("Jump") && allowJump)
+            if (Input.GetButtonDown("Jump"))
             {
-                _hasDoubledJump = true;
-                return verticalSpeed;
+                if (_touchingSurface)
+                {
+                    _verticalVelocity = _verticalSpeed;
+                }
+                else if (!_hasDoubledJump)
+                {
+                    // double jump
+                    _hasDoubledJump = true;
+                    _horizontalMovementDir = Input.GetAxis("Horizontal");
+                    _verticalVelocity = _verticalSpeed;
+                }
             }
-            if (_touchingSurface)
+            else
             {
-                // reset
-                _hasDoubledJump = false;
-            }
+                _verticalVelocity = _rigidbody.velocity.y;
 
-            return _rigidbody.velocity.y;
+            }
+        }
+
+        private void handleAnimation()
+        {
+            if (_playerVelocity.x != 0)
+            {
+                _animator.SetBool("isRunning", true);
+                if (_playerVelocity.x > 0)
+                {
+                    _sprite.flipX = false;
+                }
+                else
+                {
+                    _sprite.flipX = true;
+                }
+            }
+            else
+            {
+                _animator.SetBool("isRunning", false);
+            }
         }
     }
 }
