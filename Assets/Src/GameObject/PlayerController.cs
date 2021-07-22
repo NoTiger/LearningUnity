@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using Learning.Interface;
 
 namespace Leaning.GameObject
 {
@@ -7,6 +6,9 @@ namespace Leaning.GameObject
     {
         [SerializeField] private float _horizontalSpeed = 7f;
         [SerializeField] private float _verticalSpeed = 7f;
+
+        [SerializeField] private BoxCollider2D _groundCheckBox;
+        [SerializeField] private LayerMask groundLayer;
 
         private Rigidbody2D _rigidbody;
         private Vector2 _playerVelocity = new Vector2(0, 0);
@@ -16,8 +18,8 @@ namespace Leaning.GameObject
         private Animator _animator;
         private SpriteRenderer _sprite;
 
-        private bool _hasDoubledJump = false;
-        private bool _touchingSurface = false;
+        private bool _doubleJumped = false;
+        private bool _grounded = false;
 
         // Use this for initialization
         private void Awake()
@@ -27,40 +29,25 @@ namespace Leaning.GameObject
             _sprite = GetComponent<SpriteRenderer>();
         }
 
-        private void OnCollisionEnter2D()
-        {
-            _touchingSurface = true;
-            _hasDoubledJump = false;
-        }
-
-        private void OnCollisionExit2D()
-        {
-            _touchingSurface = false;
-        }
-
         private void FixedUpdate()
         {
+            _playerVelocity = GetVelocityFromInput();
             _rigidbody.velocity = _playerVelocity;
+            HandleAnimation();
+            IsGrounded();
         }
 
-        // Update is called once per frame
-        private void Update()
+        private Vector2 GetVelocityFromInput()
         {
-            _playerVelocity = GetMovementVelocityFromInput();
-            handleAnimation();
-        }
-
-        private Vector2 GetMovementVelocityFromInput()
-        {
-            setVectorByHorizontalInput();
-            setVectorByVerticalInput();
+            SetVectorByHorizontalInput();
+            SetVectorByVerticalInput();
 
             return new Vector2(_horizontalMovementDir * _horizontalSpeed, _verticalVelocity);
         }
 
-        public void setVectorByHorizontalInput()
+        public void SetVectorByHorizontalInput()
         {
-            if (_touchingSurface)
+            if (_grounded)
             {
                 _horizontalMovementDir = Input.GetAxis("Horizontal");
             }
@@ -70,19 +57,19 @@ namespace Leaning.GameObject
             }
         }
 
-        public void setVectorByVerticalInput()
+        public void SetVectorByVerticalInput()
         {
 
             if (Input.GetButtonDown("Jump"))
             {
-                if (_touchingSurface)
+                if (_grounded)
                 {
                     _verticalVelocity = _verticalSpeed;
                 }
-                else if (!_hasDoubledJump)
+                else if (!_doubleJumped)
                 {
                     // double jump
-                    _hasDoubledJump = true;
+                    _doubleJumped = true;
                     _horizontalMovementDir = Input.GetAxis("Horizontal");
                     _verticalVelocity = _verticalSpeed;
                 }
@@ -90,11 +77,10 @@ namespace Leaning.GameObject
             else
             {
                 _verticalVelocity = _rigidbody.velocity.y;
-
             }
         }
 
-        private void handleAnimation()
+        private void HandleAnimation()
         {
             if (_playerVelocity.x != 0)
             {
@@ -111,6 +97,16 @@ namespace Leaning.GameObject
             else
             {
                 _animator.SetBool("isRunning", false);
+            }
+        }
+
+        private void IsGrounded()
+        {
+            _grounded = Physics2D.BoxCast(_groundCheckBox.bounds.center, _groundCheckBox.bounds.size, 0f, Vector2.down, .1f, groundLayer);
+
+            if (_grounded)
+            {
+                _doubleJumped = false;
             }
         }
     }
