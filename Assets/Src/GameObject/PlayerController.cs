@@ -11,12 +11,13 @@ namespace Leaning.GameObject
         [SerializeField] private LayerMask groundLayer;
 
         private Rigidbody2D _rigidbody;
+        private SpriteRenderer _sprite;
         private Vector2 _playerVelocity = new Vector2(0, 0);
         private float _horizontalMovementDir = 0;
         private float _verticalVelocity = 0;
 
         private Animator _animator;
-        private SpriteRenderer _sprite;
+        private enum MovementState { idle, running, jumping, falling };
 
         private bool _doubleJumped = false;
         private bool _grounded = false;
@@ -82,9 +83,13 @@ namespace Leaning.GameObject
 
         private void HandleAnimation()
         {
+            MovementState state = MovementState.idle;
+            float dirY = _rigidbody.velocity.y;
+
+
             if (_playerVelocity.x != 0)
             {
-                _animator.SetBool("isRunning", true);
+                state = MovementState.running;
                 if (_playerVelocity.x > 0)
                 {
                     _sprite.flipX = false;
@@ -96,8 +101,20 @@ namespace Leaning.GameObject
             }
             else
             {
-                _animator.SetBool("isRunning", false);
+                state = MovementState.idle;
             }
+
+            if (dirY > .1f)
+            {
+                state = MovementState.jumping;
+            }
+            else if (dirY < -.1f)
+            {
+                state = MovementState.falling;
+            }
+
+
+            _animator.SetInteger("state", (int)state);
         }
 
         private void IsGrounded()
