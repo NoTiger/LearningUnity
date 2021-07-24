@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 namespace Leaning.GameObject
 {
@@ -12,15 +13,13 @@ namespace Leaning.GameObject
 
         private Rigidbody2D _rigidbody;
         private SpriteRenderer _sprite;
-        private Vector2 _playerVelocity = new Vector2(0, 0);
         private float _horizontalMovementDir = 0;
-        private float _verticalVelocity = 0;
 
         private Animator _animator;
         private enum MovementState { idle, running, jumping, falling };
 
-        private bool _doubleJumped = false;
         private bool _grounded = false;
+        private bool _jumpRequested = false;
 
         // Use this for initialization
         private void Awake()
@@ -30,23 +29,21 @@ namespace Leaning.GameObject
             _sprite = GetComponent<SpriteRenderer>();
         }
 
-        private void FixedUpdate()
+        #region Update event handler
+
+        private void Update()
         {
-            _playerVelocity = GetVelocityFromInput();
-            _rigidbody.velocity = _playerVelocity;
+            HandleInput();
             HandleAnimation();
-            IsGrounded();
         }
 
-        private Vector2 GetVelocityFromInput()
+        private void HandleInput()
         {
-            SetVectorByHorizontalInput();
-            SetVectorByVerticalInput();
-
-            return new Vector2(_horizontalMovementDir * _horizontalSpeed, _verticalVelocity);
+            HandleHorizontalInput();
+            HandleJumpInput();
         }
 
-        public void SetVectorByHorizontalInput()
+        public void HandleHorizontalInput()
         {
             if (_grounded)
             {
@@ -58,39 +55,29 @@ namespace Leaning.GameObject
             }
         }
 
-        public void SetVectorByVerticalInput()
+        public void HandleJumpInput()
         {
 
             if (Input.GetButtonDown("Jump"))
             {
                 if (_grounded)
                 {
-                    _verticalVelocity = _verticalSpeed;
+                    _jumpRequested = true;
                 }
-                else if (!_doubleJumped)
-                {
-                    // double jump
-                    _doubleJumped = true;
-                    _horizontalMovementDir = Input.GetAxis("Horizontal");
-                    _verticalVelocity = _verticalSpeed;
-                }
-            }
-            else
-            {
-                _verticalVelocity = _rigidbody.velocity.y;
             }
         }
 
         private void HandleAnimation()
         {
-            MovementState state = MovementState.idle;
-            float dirY = _rigidbody.velocity.y;
+            MovementState state;
+            float velocityY = _rigidbody.velocity.y;
+            float velocityX = _rigidbody.velocity.x;
 
 
-            if (_playerVelocity.x != 0)
+            if (velocityX != 0)
             {
                 state = MovementState.running;
-                if (_playerVelocity.x > 0)
+                if (velocityX > 0)
                 {
                     _sprite.flipX = false;
                 }
@@ -104,11 +91,11 @@ namespace Leaning.GameObject
                 state = MovementState.idle;
             }
 
-            if (dirY > .1f)
+            if (velocityY > .1f)
             {
                 state = MovementState.jumping;
             }
-            else if (dirY < -.1f)
+            else if (velocityY < -.1f)
             {
                 state = MovementState.falling;
             }
@@ -117,14 +104,49 @@ namespace Leaning.GameObject
             _animator.SetInteger("state", (int)state);
         }
 
+        #endregion
+
+        #region FixedUpdate event handler
+
+        private void FixedUpdate()
+        {
+            UpdateRigidBodyVector();
+            UpdateRigidBodyForce();
+        }
+
+        private void UpdateRigidBodyVector()
+        {
+            _rigidbody.velocity = new Vector2(_horizontalMovementDir * _horizontalSpeed, _rigidbody.velocity.y);
+        }
+
+        private void UpdateRigidBodyForce()
+        {
+            if (_jumpRequested)
+            {
+                _rigidbody.AddForce(Vector2.up * _verticalSpeed, ForceMode2D.Impulse);
+                _jumpRequested = false;
+            }
+        }
+
+        #endregion
+
+        #region Collision event handler
+
+        private void OnCollisionEnter2D(Collision2D collision)
+        {
+            IsGrounded();
+        }
+
+        private void OnCollisionExit2D(Collision2D collision)
+        {
+            IsGrounded();
+        }
+
         private void IsGrounded()
         {
             _grounded = Physics2D.BoxCast(_groundCheckBox.bounds.center, _groundCheckBox.bounds.size, 0f, Vector2.down, .1f, groundLayer);
-
-            if (_grounded)
-            {
-                _doubleJumped = false;
-            }
         }
+
+        #endregion
     }
 }
