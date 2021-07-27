@@ -1,5 +1,4 @@
-﻿using System;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace Leaning.GameObject
 {
@@ -20,6 +19,7 @@ namespace Leaning.GameObject
 
         private bool _grounded = false;
         private bool _jumpRequested = false;
+        private bool _attacking = false;
 
         // Use this for initialization
         private void Awake()
@@ -34,16 +34,17 @@ namespace Leaning.GameObject
         private void Update()
         {
             HandleInput();
-            HandleAnimation();
+            HandleMovementAnimation();
         }
 
         private void HandleInput()
         {
             HandleHorizontalInput();
             HandleJumpInput();
+            HandleAttackInput();
         }
 
-        public void HandleHorizontalInput()
+        private void HandleHorizontalInput()
         {
             if (_grounded)
             {
@@ -55,7 +56,7 @@ namespace Leaning.GameObject
             }
         }
 
-        public void HandleJumpInput()
+        private void HandleJumpInput()
         {
 
             if (Input.GetButtonDown("Jump"))
@@ -67,7 +68,23 @@ namespace Leaning.GameObject
             }
         }
 
-        private void HandleAnimation()
+        private void HandleAttackInput()
+        {
+            if (Input.GetButtonDown("Fire1") && !_attacking)
+            {
+                _attacking = true;
+                _animator.SetBool("attacking", true);
+                Invoke("ResetAttack", 1f);
+            }
+        }
+
+        private void ResetAttack()
+        {
+            _attacking = false;
+            _animator.SetBool("attacking", false);
+        }
+
+        private void HandleMovementAnimation()
         {
             MovementState state;
             float velocityY = _rigidbody.velocity.y;
@@ -77,13 +94,13 @@ namespace Leaning.GameObject
             if (velocityX != 0)
             {
                 state = MovementState.running;
-                if (velocityX > 0)
+                if (velocityX > .1f)
                 {
-                    _sprite.flipX = false;
+                    transform.localScale = new Vector3(1, 1, 1);
                 }
-                else
+                else if (velocityX < -.1f)
                 {
-                    _sprite.flipX = true;
+                    transform.localScale = new Vector3(-1, 1, 1);
                 }
             }
             else
@@ -99,7 +116,6 @@ namespace Leaning.GameObject
             {
                 state = MovementState.falling;
             }
-
 
             _animator.SetInteger("state", (int)state);
         }
