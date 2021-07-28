@@ -2,7 +2,7 @@
 
 namespace Leaning.GameObject
 {
-    public class PlayerController : MonoBehaviour
+    public class PlayerMovement : MonoBehaviour
     {
         [SerializeField] private float _horizontalSpeed = 7f;
         [SerializeField] private float _verticalSpeed = 7f;
@@ -19,7 +19,6 @@ namespace Leaning.GameObject
 
         private bool _grounded = false;
         private bool _jumpRequested = false;
-        private bool _attacking = false;
 
         // Use this for initialization
         private void Awake()
@@ -41,7 +40,6 @@ namespace Leaning.GameObject
         {
             HandleHorizontalInput();
             HandleJumpInput();
-            HandleAttackInput();
         }
 
         private void HandleHorizontalInput()
@@ -66,22 +64,6 @@ namespace Leaning.GameObject
                     _jumpRequested = true;
                 }
             }
-        }
-
-        private void HandleAttackInput()
-        {
-            if (Input.GetButtonDown("Fire1") && !_attacking)
-            {
-                _attacking = true;
-                _animator.SetBool("attacking", true);
-                Invoke("ResetAttack", 1f);
-            }
-        }
-
-        private void ResetAttack()
-        {
-            _attacking = false;
-            _animator.SetBool("attacking", false);
         }
 
         private void HandleMovementAnimation()
