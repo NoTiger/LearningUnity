@@ -7,12 +7,16 @@ public class BreakableObject : MonoBehaviour, ITakeDamage
 {
     [SerializeField] private float _health = 10;
     [SerializeField] private GameObject _breakableCopy;
+    [SerializeField] private Animator _aniamtor = null;
+    [SerializeField] private string _hitAnimationName = "hit";
 
     public void TakeDamage(float damage)
     {
         _health -= damage;
 
-        if(_health <= 0)
+        _aniamtor.Play(_hitAnimationName);
+
+        if (_health <= 0)
         {
             DestroyObject();
         }

@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 4013804836614740535}
   - component: {fileID: 4013804836614740534}
   - component: {fileID: 4013804836614740521}
+  - component: {fileID: 813822059}
   m_Layer: 0
   m_Name: Barrel
   m_TagString: Untagged
@@ -146,3 +147,24 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _health: 10
   _breakableCopy: {fileID: 4394327740142699064, guid: 0098d139b447a5540866520b379c2e89, type: 3}
+  _aniamtor: {fileID: 813822059}
+  _hitAnimationName: hit
+--- !u!95 &813822059
+Animator:
+  serializedVersion: 3
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4013804836614740520}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: c9cb8d5de045e924b911de8dc6829ae7, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorControllerStateOnDisable: 0
