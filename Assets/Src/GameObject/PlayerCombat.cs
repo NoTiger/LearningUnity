@@ -22,7 +22,6 @@ public class PlayerCombat : MonoBehaviour
         if (Input.GetButtonDown("Fire1"))
         {
             Attack();
-
         };
     }
 
@@ -30,7 +29,10 @@ public class PlayerCombat : MonoBehaviour
     {
         // Play animation
         _animator.SetTrigger("attackTrigger");
+    }
 
+    public void TriggerPunchEvent()
+    {
         // Detect enimies in range of attack
         Collider2D[] hitColliders = Physics2D.OverlapCircleAll(_attackPoint.position, attackRange);
         foreach (Collider2D collider in hitColliders)
