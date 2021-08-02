@@ -6,6 +6,7 @@ namespace Leaning.GameObject
     {
         [SerializeField] private float _horizontalSpeed = 7f;
         [SerializeField] private float _verticalSpeed = 7f;
+        [SerializeField] private float _speedMultiplier = 1.3f;
 
         [SerializeField] private BoxCollider2D _groundCheckBox;
         [SerializeField] private LayerMask groundLayer;
@@ -19,6 +20,7 @@ namespace Leaning.GameObject
 
         private bool _grounded = false;
         private bool _jumpRequested = false;
+        private bool _running = false;
 
         // Use this for initialization
         private void Awake()
@@ -44,6 +46,15 @@ namespace Leaning.GameObject
 
         private void HandleHorizontalInput()
         {
+            if (Input.GetKey(KeyCode.LeftShift))
+            {
+                _running = true;
+            }
+            else
+            {
+                _running = false;
+            }
+
             if (_grounded)
             {
                 _horizontalMovementDir = Input.GetAxis("Horizontal");
@@ -76,6 +87,10 @@ namespace Leaning.GameObject
             if (velocityX != 0)
             {
                 state = MovementState.running;
+
+                bool shouldBeRunning = _running & _grounded & (velocityX > .1f | velocityX < -.1f);
+                _animator.SetBool("running", shouldBeRunning);
+
                 if (velocityX > .1f)
                 {
                     transform.localScale = new Vector3(1, 1, 1);
@@ -114,7 +129,8 @@ namespace Leaning.GameObject
 
         private void UpdateRigidBodyVector()
         {
-            _rigidbody.velocity = new Vector2(_horizontalMovementDir * _horizontalSpeed, _rigidbody.velocity.y);
+            float multiplier = _running & _grounded? _speedMultiplier : 1;
+            _rigidbody.velocity = new Vector2(_horizontalMovementDir * _horizontalSpeed * multiplier, _rigidbody.velocity.y);
         }
 
         private void UpdateRigidBodyForce()

@@ -13705,6 +13705,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _horizontalSpeed: 7
   _verticalSpeed: 7
+  _speedMultiplier: 2
   _groundCheckBox: {fileID: 9716988}
   groundLayer:
     serializedVersion: 2
@@ -13806,7 +13807,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4013804836614740533, guid: 8236b29a2c869c74dbb33e15da30d58c, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 8.82
+      value: -8.91
       objectReference: {fileID: 0}
     - target: {fileID: 4013804836614740533, guid: 8236b29a2c869c74dbb33e15da30d58c, type: 3}
       propertyPath: m_LocalPosition.y
